@@ -12,6 +12,9 @@ server: shiny
 #| context: setup
 #| message: false
 source("libraries.R")
+df <- read.table("data/climate-reports-tables-homogenized_GVE.txt",skip = 26,header = T) %>%   
+  mutate( Date = as.Date(paste(Year, Month,"01",sep = "-"))) %>%
+  as_tibble
 ```
 
 ```{r}
@@ -19,45 +22,61 @@ source("libraries.R")
 plotOutput('plot')
 ```
 
-::: {layout-ncol="3"}
+::: {layout-ncol="2"}
 ```{r}
-sliderInput('month_val', 'Select the month', 
-            min=1, max=12,
-            value=1)
+selectInput(
+  inputId = 'month_val', 
+  label = 'Select the month',
+  choices =  unique(month(df$Date,label = T)),
+  selected = "Jan",
+  multiple = F)
+# numericInput(inputId = "val",label = "Grouped by :",value = 1,min = 1,max = 100,step = 1)
+sliderInput(inputId = "val",label = "Grouped by :",min = 1,max = 100,value = 1,step = 1)
 br()
-
-checkboxInput('smooth', 'Smooth')
-
+checkboxInput('smooth', 'Smooth (see trend over the years)')
 ```
+
+```{r}
+DT::dataTableOutput(outputId = "table", width = "100%", height = "auto", fill = TRUE)
+```
+
 :::
 ```{r}
 #| context: server
-
 dataset <- reactive({
   
-  df <- read.table("data/climate-reports-tables-homogenized_GVE.txt",skip = 26,header = T) 
-  
   df %>% 
-    as_tibble() %>% 
-    filter( Month == input$month_val)
+    mutate(DatePeriod = as.Date(paste(input$val * floor(year(Date)/input$val), Month,"01",sep = "-"))) %>%
+    filter( month(Date,label = T) == input$month_val) %>% 
+    group_by(DatePeriod) %>% 
+    summarise(Temperature  = mean(Temperature)) %>% ungroup() 
+
+  })
+
+output$table <- DT::renderDataTable(
   
-})
+  dataset() %>% 
+    arrange(desc(DatePeriod)) %>% 
+    mutate(Temperature= round(Temperature,2)) %>% 
+    select(DatePeriod,Temperature) 
+)
+
  
 output$plot <- renderPlot({
 
   p <- dataset() %>%
-    ggplot(aes(x = Year, y = Temperature ,color= as_factor(Month))) +
-    geom_point() +
+    ggplot(aes(x = DatePeriod, y = Temperature )) +
     geom_line() +
-    scale_x_continuous(n.breaks = 15)+
-    labs(title  = paste0("Temperature for the month :",input$month_val)) +
+    scale_x_date(date_labels = "%Y", date_breaks = "10 years") +
+    labs(title  = paste0("Temperature for the month : ",input$month_val)) +
     theme(legend.position = "None")  
   
  if (input$smooth)
    p <- p + geom_smooth(se = F,method = "loess",formula = 'y ~ x')
 
-  
   print(p)
 
 })
+
+
 ```

@@ -1,34 +1,35 @@
 
-
 source("libraries.R")
 
 ## Data Import 
 dr <- read.table("data/climate-reports-tables-homogenized_GVE.txt",skip = 26,header = T) %>% 
   as_tibble()
 
+val = 5
 
 df <- dr %>% 
-  mutate( date_val = paste0(Year,Month,1), Month = month(Month));df
- 
+  mutate( Date = as.Date(paste(Year, Month,"01",sep = "-")), 
+          DatePeriod = as.Date(paste(val * floor(year(Date)/val), Month,"01",sep = "-"))
+  ) %>% 
+  filter( month(DatePeriod,label = T) == "Feb") %>% 
+  group_by(DatePeriod) %>% 
+  summarise(Temperature  = mean(Temperature)) %>% ungroup()
 
-df %>% 
-  ggplot() +
-  geom_jitter(aes(x = Month, y = Temperature,color= Year))
+p <- df %>%
+  ggplot(aes(x = DatePeriod, y = Temperature , color= month(DatePeriod,label = T))) +
+  # geom_point() +
+  geom_line() +
+  # scale_x_continuous(n.breaks = 15)+
+  # labs(title  = paste0("Temperature for the month :",input$month_val)) +
+  theme(legend.position = "None")  
 
+# if (input$smooth)
+  p <- p + geom_smooth(se = F,method = "loess",formula = 'y ~ x')
 
-df %>% 
-  ggplot() +
-  geom_line(aes(x = Month, y = Temperature,color= as_factor(Year)))
-
-
-
-df %>% 
-  filter( Month == 7) %>% 
-  ggplot(aes(x = Year, y = Temperature ,color= as_factor(Month))) +
-  # scale_y_continuous(n.breaks = 10,limits = c(-10,10)) +
-  geom_point() +
-  geom_line()
+print(p)
   
+t <- df %>% 
+  arrange(desc(DatePeriod)) %>% 
+  select(DatePeriod,Temperature)
 
-
-
+print(t)

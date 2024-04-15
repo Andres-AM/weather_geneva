@@ -3,13 +3,14 @@
 library(tidyverse)
 library(lubridate) 
 library(modelr) 
+library(shiny)
 
 ## Data visualisation packages
 # library(shinythemes)
 # library(flexdashboard)
 # library(shinyjs)
 # library(rsconnect)
-# library(plotly)
+library(plotly)
 # library(kableExtra)
 # library(knitr) 
 # library(DT)
