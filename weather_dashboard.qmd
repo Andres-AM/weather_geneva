@@ -1,0 +1,63 @@
+---
+title: "Weather Changes in Geneva"
+format:
+  html:
+    page-layout: full
+    code-tools: 
+      source: https://github.com/Andres-AM/weather_geneva/blob/main/weather_dashboard.qmd
+server: shiny
+---
+
+```{r}
+#| context: setup
+#| message: false
+source("libraries.R")
+```
+
+```{r}
+#| panel: fill
+plotOutput('plot')
+```
+
+::: {layout-ncol="3"}
+```{r}
+sliderInput('month_val', 'Select the month', 
+            min=1, max=12,
+            value=1)
+br()
+
+checkboxInput('smooth', 'Smooth')
+
+```
+:::
+```{r}
+#| context: server
+
+dataset <- reactive({
+  
+  df <- read.table("data/climate-reports-tables-homogenized_GVE.txt",skip = 26,header = T) 
+  
+  df %>% 
+    as_tibble() %>% 
+    filter( Month == input$month_val)
+  
+})
+ 
+output$plot <- renderPlot({
+
+  p <- dataset() %>%
+    ggplot(aes(x = Year, y = Temperature ,color= as_factor(Month))) +
+    geom_point() +
+    geom_line() +
+    scale_x_continuous(n.breaks = 15)+
+    labs(title  = paste0("Temperature for the month :",input$month_val)) +
+    theme(legend.position = "None")  
+  
+ if (input$smooth)
+   p <- p + geom_smooth(se = F,method = "loess",formula = 'y ~ x')
+
+  
+  print(p)
+
+})
+```

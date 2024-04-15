@@ -1,0 +1,50 @@
+---
+title: "Weather Changes in Geneva"
+author: "Andrés Acuña Marroquín"
+date: "today"
+format: 
+  html:
+    fig-width: 8
+    fig-height: 8
+    code-fold: TRUE
+---
+
+
+## Overview
+
+How to read this scatter plot, @fig-NutriPlot1:   
+
+On the axis, as you move towards the right, the food becomes more calorie-dense. Similarly, moving upwards indicates increasing protein density.
+
+Consequently:  
+
+- Top left indicates foods with high protein content per calorie and low calorie count per 100g.   
+- Bottom right represents foods with low protein content per calorie but high overall calorie count per 100g.  
+- Top right denotes foods with high protein content per calorie and high calorie count per 100g.   
+- Bottom left signifies foods with low protein content per calorie and low calorie count per 100g.   
+
+
+```{r}
+#| label: fig-NutriPlot1
+#| fig-cap: "for 100g of content"
+#| warning: false
+
+source("libraries.R")
+
+dr <- read.table("data/climate-reports-tables-homogenized_GVE.txt",skip = 26,header = T) %>% 
+  as_tibble()
+ 
+
+df <- dr
+
+
+df %>% 
+  filter( Month == 7) %>% 
+  ggplot(aes(x = Year, y = Temperature ,color= as_factor(Month))) +
+  # scale_y_continuous(n.breaks = 10,limits = c(-10,10)) +
+  geom_point() +
+  geom_line()
+
+```
+
+
