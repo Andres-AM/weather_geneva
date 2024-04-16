@@ -7,7 +7,6 @@ A way to visualize weather from 1864 to the present day, grouped by month of the
 
 ![Preview](data/preview.jpg)
 
-
 ## Dependencies
 
 This project relies on the following R packages:
@@ -19,7 +18,7 @@ This project relies on the following R packages:
 
 ## How to run this app 
 
-You can run this app by downloading the project and running the app.R file.
+You can run this app by downloading the project and running the app.R file. 
 
 
  
