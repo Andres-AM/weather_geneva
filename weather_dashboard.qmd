@@ -41,36 +41,40 @@ DT::dataTableOutput(outputId = "table", width = "100%", height = "auto", fill = 
 ```
 
 :::
+
 ```{r}
 #| context: server
+
 dataset <- reactive({
-  
-  df %>% 
+
+  df %>%
     mutate(DatePeriod = as.Date(paste(input$val * floor(year(Date)/input$val), Month,"01",sep = "-"))) %>%
-    filter( month(Date,label = T) == input$month_val) %>% 
-    group_by(DatePeriod) %>% 
-    summarise(Temperature  = mean(Temperature)) %>% ungroup() 
+    filter( month(Date,label = T) == input$month_val) %>%
+    group_by(DatePeriod) %>%
+    summarise(Temperature  = mean(Temperature)) %>%
+    ungroup()
 
   })
 
-output$table <- DT::renderDataTable(
-  
-  dataset() %>% 
-    arrange(desc(DatePeriod)) %>% 
-    mutate(Temperature= round(Temperature,2)) %>% 
-    select(DatePeriod,Temperature) 
+
+
+output$table1 <- DT::renderDataTable(
+
+  dataset() %>%
+    arrange(desc(DatePeriod)) %>%
+    mutate(Temperature= round(Temperature,2)) %>%
+    select(DatePeriod,Temperature)
 )
 
- 
-output$plot <- renderPlot({
+output$plot1 <- renderPlot({
 
   p <- dataset() %>%
     ggplot(aes(x = DatePeriod, y = Temperature )) +
     geom_line() +
     scale_x_date(date_labels = "%Y", date_breaks = "10 years") +
     labs(title  = paste0("Temperature for the month : ",input$month_val)) +
-    theme(legend.position = "None")  
-  
+    theme(legend.position = "None")
+
  if (input$smooth)
    p <- p + geom_smooth(se = F,method = "loess",formula = 'y ~ x')
 
