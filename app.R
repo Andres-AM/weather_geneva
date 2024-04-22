@@ -12,32 +12,31 @@ ui <- dashboardPage(skin = "blue",
                       
                       selectInput(
                         inputId = 'month_val', 
-                        label = 'Select the month',
+                        label = 'Select the month to display:',
                         choices =  unique(month(df$Date,label = T)),
                         selected = "Jan",
                         multiple = F),
                       
-                      sliderInput(inputId = "val",label = "Grouped by :",min = 1,max = 100,value = 1,step = 1), 
+                      sliderInput(inputId = "val",label = "Grouped by (in years):",min = 1,max = 10,value = 1,step = 1), 
                       hr(),
-                      checkboxInput('smooth', 'Smooth (see trend over the years)')
-                      
-                      
-                      
+                      checkboxInput('smooth', 'Add best regression fit to see trend over the years')
+
                     ),
                     dashboardBody(
                       # Boxes need to be put in a row (or column)
                       fluidRow(
-                        
-
                         box(
-                          
-                          plotOutput('plot1')
+                          width = 12,
+                          plotlyOutput(outputId = "plot1")
                           
                         ),
+                      ),
+                      
+                      fluidRow(
                         
                         box(
                           h2("Weather in Geneva"),
-                          "Weather"
+                          "Analyzing weather patterns in Geneva from 1864 to 2024 for a particular month reveals significant fluctuations. By aggregating data into yearly averages, we can discern trends more clearly. This approach allows us to observe the evolution of weather conditions over time with greater precision. Furthermore, fitting the data points with a best-fit line provides a comprehensive representation of the overall trajectory of weather changes throughout the specified month."
                         ),
                         
                         box(
@@ -69,19 +68,22 @@ server <- function(input, output,session) {
       select(DatePeriod,Temperature)
   )
   
-  output$plot1 <- renderPlot({
+  output$plot1 <- renderPlotly({
     
     p <- dataset() %>%
       ggplot(aes(x = DatePeriod, y = Temperature )) +
       geom_line() +
       scale_x_date(date_labels = "%Y", date_breaks = "10 years") +
-      labs(title  = paste0("Temperature for the month : ",input$month_val)) +
-      theme(legend.position = "None")
+      labs(title  = paste0("Average temperature for the month of ",input$month_val)) 
     
     if (input$smooth)
       p <- p + geom_smooth(se = F,method = "loess",formula = 'y ~ x')
     
-    print(p)
+    p <- ggplotly(p)%>%
+      layout(xaxis = list(autorange = TRUE),
+             yaxis = list(autorange = TRUE))
+    
+    p
     
   })
   

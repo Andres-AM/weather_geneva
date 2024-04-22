@@ -1,0 +1,12 @@
+name: weather_geneva
+title: weather_geneva
+username: andres-am
+account: andres-am
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11826720
+bundleId: 8524549
+url: https://andres-am.shinyapps.io/weather_geneva/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
